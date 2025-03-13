@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Verdana, sans-serif;
+        margin: 0;
+      }
+      .mySlides {
+        display: none;
+      }
+      img {
+        vertical-align: middle;
+      }
+
+      /* Slideshow container */
+      .slideshow-container {
+  width: 80vw;  /* Full viewport width */
+ 
+  position: relative;
+  margin: 0 auto;
+  border: 5px solid #ddd; /* Light gray border */
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  overflow: hidden; /* Prevent overflow */
+  display: flex;
+  align-items: center; /* Vertically center */
+  justify-content: center; /* Horizontally center */
+}
+
+.mySlides img {
+  width: 80%; /* Ensure image fills container */
+  border-radius: 10px; /* Match container's border */
+}
+
+      /* Next & previous buttons */
+      .prev, 
+.next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%); /* Center vertically */
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  color: white; /* White text for better contrast */
+  font-weight: bold;
+  font-size: 24px; /* Make buttons more prominent */
+  padding: 20px 25px; /* Increase padding for larger touch area */
+  border-radius: 5px; /* Rounded edges */
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+/* Left button */
+.prev {
+  left: 20px; /* Keep some space from the edge */
+}
+
+/* Right button */
+.next {
+  right: 20px; /* Keep some space from the edge */
+}
+
+/* Hover effect */
+.prev:hover, 
+.next:hover {
+  background: rgba(0, 0, 0, 0.8); /* Darker background on hover */
+  transform: translateY(-50%) scale(1.1); /* Slight scale effect */
+}
+
+      /* Caption text */
+      .text {
+        color: #f2f2f2;
+        font-size: 15px;
+        padding: 8px 12px;
+        position: absolute;
+        bottom: 8px;
+        width: 100%;
+        text-align: center;
+      }
+
+      /* Number text */
+      .numbertext {
+        color: #f2f2f2;
+        font-size: 12px;
+        padding: 8px 12px;
+        position: absolute;
+        top: 0;
+      }
+
+      /* Dots */
+      .dot {
+        cursor: pointer;
+        height: 15px;
+        width: 15px;
+        margin: 0 2px;
+        background-color: #bbb;
+        border-radius: 50%;
+        display: inline-block;
+        transition: background-color 0.6s ease;
+      }
+
+      .active,
+      .dot:hover {
+        background-color: #717171;
+      }
+
+      /* Fade animation */
+      .fade {
+        animation-name: fade;
+        animation-duration: 1.5s;
+      }
+
+      @keyframes fade {
+        from {
+          opacity: 0.4;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @media only screen and (max-width: 300px) {
+        .prev,
+        .next,
+        .text {
+          font-size: 11px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="slideshow-container" id="slideshow">
+      <!-- Images will be inserted dynamically here -->
+    </div>
+
+    <br />
+
+    <div style="text-align: center" id="dots-container">
+      <!-- Dots will be inserted dynamically -->
+    </div>
+
+    <script>
+      let slideIndex = 1;
+
+      // Function to fetch and parse XML
+      async function fetchXMLImages() {
+        try {
+          const response = await fetch("image.xml"); // Replace with your XML file path
+          const text = await response.text();
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(text, "application/xml");
+
+          let images = xml.getElementsByTagName("image");
+          let slideshowContainer = document.getElementById("slideshow");
+          let dotsContainer = document.getElementById("dots-container");
+
+          // Clear existing content
+          slideshowContainer.innerHTML = "";
+          dotsContainer.innerHTML = "";
+
+          for (let i = 0; i < images.length; i++) {
+            let imgSrc = images[i].getElementsByTagName("url")[0].textContent;
+            let caption =
+              images[i].getElementsByTagName("caption")[0].textContent;
+
+            // Create slide div
+            let slideDiv = document.createElement("div");
+            slideDiv.classList.add("mySlides", "fade");
+
+            // Number text
+            let numberText = document.createElement("div");
+            numberText.classList.add("numbertext");
+            numberText.innerText = `${i + 1} / ${images.length}`;
+
+            // Image
+            let img = document.createElement("img");
+            img.src = imgSrc;
+            img.style.width = "100%";
+
+            // Caption
+            let captionDiv = document.createElement("div");
+            captionDiv.classList.add("text");
+            captionDiv.innerText = caption;
+
+            // Append to slide
+            slideDiv.appendChild(numberText);
+            slideDiv.appendChild(img);
+            slideDiv.appendChild(captionDiv);
+            slideshowContainer.appendChild(slideDiv);
+
+            // Create dot
+            let dot = document.createElement("span");
+            dot.classList.add("dot");
+            dot.setAttribute("onclick", `currentSlide(${i + 1})`);
+            dotsContainer.appendChild(dot);
+          }
+
+          // Add navigation buttons
+          slideshowContainer.innerHTML += `
+            <a class="prev" onclick="plusSlides(-1)">❮</a>
+            <a class="next" onclick="plusSlides(1)">❯</a>
+        `;
+
+          showSlides(slideIndex); // Show first slide
+        } catch (error) {
+          console.error("Error fetching XML:", error);
+        }
+      }
+
+      // Slideshow functions
+      function plusSlides(n) {
+        showSlides((slideIndex += n));
+      }
+
+      function currentSlide(n) {
+        showSlides((slideIndex = n));
+      }
+
+      function showSlides(n) {
+        let i;
+        let slides = document.getElementsByClassName("mySlides");
+        let dots = document.getElementsByClassName("dot");
+
+        if (n > slides.length) {
+          slideIndex = 1;
+        }
+        if (n < 1) {
+          slideIndex = slides.length;
+        }
+
+        for (i = 0; i < slides.length; i++) {
+          slides[i].style.display = "none";
+        }
+        for (i = 0; i < dots.length; i++) {
+          dots[i].className = dots[i].className.replace(" active", "");
+        }
+
+        slides[slideIndex - 1].style.display = "block";
+        dots[slideIndex - 1].className += " active";
+      }
+
+      // Call fetchXMLImages to load images dynamically
+      fetchXMLImages();
+    </script>
+  </body>
+</html>
